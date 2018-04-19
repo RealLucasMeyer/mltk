@@ -175,7 +175,7 @@ public class Visualizer {
 						String[] states = ((NominalAttribute) f).getStates();
 						for (int j = 0; j < states.length; j++) {
 							point.setValue(term[0], j);
-							out.printf("%s\t%f\n", states[j], regressor.regress(point));
+							out.printf("\"%s\"\t%f\n", states[j], regressor.regress(point));
 						}
 						out.println("e");
 						break;
@@ -240,30 +240,58 @@ public class Visualizer {
 				if (f1.getType() == Attribute.Type.NOMINAL) {
 					out.print("set ytics(");
 					String[] states = ((NominalAttribute) f1).getStates();
-					for (int j = 0; j < states.length; j++) {
-						out.printf("%s %d", states[j], j);
+					for (int j = 0; j < states.length-1; j++) {
+						out.printf("\"%s\" %d,", states[j], j);
 					}
+					out.printf("\"%s\" %d", states[states.length-1], states.length);
 					out.println(")");
 				}
 				if (f2.getType() == Attribute.Type.NOMINAL) {
 					out.print("set xtics(");
 					String[] states = ((NominalAttribute) f2).getStates();
-					for (int j = 0; j < states.length; j++) {
-						out.printf("%s %d", states[j], j);
+					for (int j = 0; j < states.length-1; j++) {
+						out.printf("\"%s\" %d,", states[j], j);
 					}
+					out.printf("\"%s\" %d", states[states.length-1], states.length);
 					out.println(")");
 				}
 				out.println("set view map");
 				out.println("set style data pm3d");
 				out.println("set style function pm3d");
 				out.println("set pm3d corners2color c4");
-				Bins bins1 = ((BinnedAttribute) f1).getBins();
+				Bins bins1 = null;
+				if (f1.getType() == Attribute.Type.BINNED) {
+					bins1 = ((BinnedAttribute) f1).getBins();
+				} else if (f1.getType() == Attribute.Type.NOMINAL) {
+					double [] boundaries = new double[((NominalAttribute) f1).getCardinality()];
+					double [] medians = new double[((NominalAttribute) f1).getCardinality()];
+					
+					for (int xs = 0; xs < boundaries.length; xs++) {
+						boundaries[xs] = xs;
+						medians[xs] = xs;
+					}
+
+					bins1 = new Bins(boundaries, medians);
+				}
 				double[] boundaries1 = bins1.getBoundaries();
 				double start1 = boundaries1[0] - 1;
 				if (boundaries1.length >= 2) {
 					start1 = boundaries1[0] - (boundaries1[1] - boundaries1[0]);
 				}
-				Bins bins2 = ((BinnedAttribute) f2).getBins();
+				Bins bins2 = null;
+				if (f2.getType() == Attribute.Type.BINNED) {
+					bins2 = ((BinnedAttribute) f2).getBins();
+				} else if (f2.getType() == Attribute.Type.NOMINAL) {
+					double [] boundaries = new double[((NominalAttribute) f2).getCardinality()];
+					double [] medians = new double[((NominalAttribute) f2).getCardinality()];
+					
+					for (int xs = 0; xs < boundaries.length; xs++) {
+						boundaries[xs] = xs;
+						medians[xs] = xs;
+					}
+
+					bins2 = new Bins(boundaries, medians);
+				}
 				double[] boundaries2 = bins2.getBoundaries();
 				double start2 = boundaries2[0] - 1;
 				if (boundaries2.length >= 2) {
